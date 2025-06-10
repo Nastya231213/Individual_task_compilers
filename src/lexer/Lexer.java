@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-
-
 public class Lexer {
     private final String input;
     private int pos = 0;
@@ -13,6 +11,7 @@ public class Lexer {
     private int col = 0;
     private final List<Token> tokens = new ArrayList<>();
     private final List<LexicalError> errors = new ArrayList<>();
+    private final List<TextError> textErrors = new ArrayList<>();
 
     private static final Set<String> KEYWORDS = Set.of(
             "begin", "end", "var", "if", "then", "else", "while", "do", "procedure", "function",
@@ -45,7 +44,9 @@ public class Lexer {
                     throw new RuntimeException("Unknown character: " + current);
                 }
             } catch (Exception e) {
-                errors.add(new LexicalError(e.getMessage(), line, col));
+                LexicalError le = new LexicalError(e.getMessage(), line, col);
+                errors.add(le);
+                textErrors.add(new TextError(le.toString()));
                 advance();
             }
         }
@@ -54,6 +55,10 @@ public class Lexer {
 
     public List<LexicalError> getErrors() {
         return errors;
+    }
+
+    public List<TextError> getTextErrors() {
+        return textErrors;
     }
 
     private void consumeWhitespace() {
@@ -79,7 +84,9 @@ public class Lexer {
         if (pos < input.length()) {
             advance(); // skip '}'
         } else {
-            errors.add(new LexicalError("Unclosed comment", line, startCol));
+            LexicalError le = new LexicalError("Unclosed comment", line, startCol);
+            errors.add(le);
+            textErrors.add(new TextError(le.toString()));
         }
     }
 
@@ -116,7 +123,9 @@ public class Lexer {
             advance(); // skip closing '
             tokens.add(new Token(TokenType.STRING, sb.toString(), line, startCol));
         } else {
-            errors.add(new LexicalError("Unclosed string literal", line, startCol));
+            LexicalError le = new LexicalError("Unclosed string literal", line, startCol);
+            errors.add(le);
+            textErrors.add(new TextError(le.toString()));
         }
     }
 

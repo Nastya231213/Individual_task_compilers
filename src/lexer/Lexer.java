@@ -11,11 +11,13 @@ public class Lexer {
     private int col = 0;
     private final List<Token> tokens = new ArrayList<>();
     private final List<LexicalError> errors = new ArrayList<>();
-    private final List<TextError> textErrors = new ArrayList<>();
 
     private static final Set<String> KEYWORDS = Set.of(
-            "begin", "end", "var", "if", "then", "else", "while", "do", "procedure", "function",
-            "true", "false", "and", "or", "not"
+            "and","array","begin","case","const","div","do","downto",
+            "else","end","file","for","function","goto","if","in",
+            "label","mod","nil","not","of","or","packed","procedure",
+            "program","record","repeat","set","then","to","type","until",
+            "var","while","with","true","false"
     );
 
     public Lexer(String input) {
@@ -41,15 +43,20 @@ public class Lexer {
                 } else if (isDelimiter(current)) {
                     addToken(TokenType.DELIMITER, String.valueOf(advance()));
                 } else {
-                    throw new RuntimeException("Unknown character: " + current);
+                    LexicalError le = new LexicalError("Unknown character: " + current, line, col);
+                    errors.add(le);
+                    advance();
                 }
             } catch (Exception e) {
                 LexicalError le = new LexicalError(e.getMessage(), line, col);
                 errors.add(le);
-                textErrors.add(new TextError(le.toString()));
                 advance();
             }
         }
+        return tokens;
+    }
+
+    public List<Token> getTokens() {
         return tokens;
     }
 
@@ -57,9 +64,6 @@ public class Lexer {
         return errors;
     }
 
-    public List<TextError> getTextErrors() {
-        return textErrors;
-    }
 
     private void consumeWhitespace() {
         while (pos < input.length() && Character.isWhitespace(peek())) {
@@ -86,7 +90,6 @@ public class Lexer {
         } else {
             LexicalError le = new LexicalError("Unclosed comment", line, startCol);
             errors.add(le);
-            textErrors.add(new TextError(le.toString()));
         }
     }
 
@@ -125,7 +128,6 @@ public class Lexer {
         } else {
             LexicalError le = new LexicalError("Unclosed string literal", line, startCol);
             errors.add(le);
-            textErrors.add(new TextError(le.toString()));
         }
     }
 

@@ -1,9 +1,9 @@
-package lexer;
+package parser;
 
-public class TextError {
+public class SyntaxError {
     private final String error;
 
-    public TextError(String error) {
+    public SyntaxError(String error) {
         this.error = error;
     }
 
@@ -13,6 +13,6 @@ public class TextError {
 
     @Override
     public String toString() {
-        return "Error: " + error;
+        return "Syntax Error: " + error;
     }
 }
